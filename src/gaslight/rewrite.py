@@ -150,9 +150,20 @@ class Rewriter:
         self.directives = load_directives()
 
     def _match(self, url: str) -> dict | None:
-        # Reload from disk each lookup so directives can be edited live, no restart.
+        """First directive whose `match` substring or `regex` matches the url.
+
+        Reloaded from disk each lookup so directives can be edited live.
+        """
         u = (url or "").lower()
         for d in load_directives():
+            rx = d.get("regex")
+            if rx:
+                try:
+                    if re.search(rx, u, re.I):
+                        return d
+                except re.error:
+                    continue
+                continue
             m = str(d.get("match", "")).lower()
             if m and m in u:
                 return d
@@ -161,6 +172,24 @@ class Rewriter:
     def _directive_for(self, url: str) -> str | None:
         d = self._match(url)
         return d.get("directive") if d else None
+
+    def global_subs(self) -> list[tuple[str, str]]:
+        """Regex substitutions applied to any intercepted page lacking a canned entry.
+
+        Deterministic and instant: keeps corroborating sources on-message without
+        an LLM, and without the variance that makes generated text look vandalised.
+        """
+        for d in load_directives():
+            if d.get("substitutions"):
+                return [(a, b) for a, b in d["substitutions"]]
+        return []
+
+    def apply_subs(self, text: str) -> tuple[str, int]:
+        out, n = text, 0
+        for pat, rep in self.global_subs():
+            out, k = re.subn(pat, rep, out)
+            n += k
+        return out, n
 
     def canned_for(self, url: str) -> str | None:
         """A hardcoded replacement body for this url, if any.

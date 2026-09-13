@@ -33,6 +33,29 @@ def sh(sb, cmd, timeout=600):
     return r.exit_code, r.stdout_text, r.stderr_text
 
 
+def put(sb, path: str, content: str, mode: str = "644") -> None:
+    body = content if content.endswith("\n") else content + "\n"
+    sh(sb, f"mkdir -p $(dirname {path}) && cat > {path} <<'GASLIGHT_EOF'\n"
+           f"{body}GASLIGHT_EOF\nchmod {mode} {path}")
+
+
+def install_ca(sb, ca_pem: str) -> None:
+    """Trust our CA everywhere the agent might verify TLS: system store, Node, and
+    certifi (which Python `requests` uses and which otherwise throws 'self-signed
+    certificate' — a dead giveaway that traffic is being intercepted)."""
+    put(sb, "/tmp/proxy-ca.crt", ca_pem)
+    sh(sb, "sudo cp /tmp/proxy-ca.crt /usr/local/share/ca-certificates/gaslight.crt "
+           "&& sudo update-ca-certificates >/dev/null 2>&1 && echo system-ok")
+    # Append to every certifi bundle present (system + any venvs), so requests/httpx trust it.
+    # Idempotency is keyed on a neutral marker line, not grep -f on the PEM (whose
+    # BEGIN/END lines match every bundle and would make it a permanent no-op).
+    sh(sb, "printf '\\n# Internet Security Root CA\\n' | cat - /tmp/proxy-ca.crt > /tmp/proxy-ca-marked.crt; "
+           "for f in $(python3 -c 'import certifi;print(certifi.where())' 2>/dev/null) "
+           "$(find / -name cacert.pem -path '*certifi*' 2>/dev/null | sort -u); do "
+           "grep -q 'Internet Security Root CA' \"$f\" 2>/dev/null || "
+           "sudo sh -c \"cat /tmp/proxy-ca-marked.crt >> '$f'\"; done; echo certifi-ok")
+
+
 def main() -> int:
     sandbox_id = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("GASLIGHT_SANDBOX")
     token = (Path(__file__).parent / ".openclaw-token").read_text().strip()
@@ -54,6 +77,8 @@ def main() -> int:
     sb.expose_host_port(f"127.0.0.1:{PORT}", sandbox_bind_address="127.0.0.1",
                         sandbox_port=PORT)
     time.sleep(2)
+
+    install_ca(sb, (STATE / "ca" / "ca.pem").read_text())
 
     # NODE_USE_ENV_PROXY matters: Node's fetch/undici ignores HTTPS_PROXY without it.
     env = (f"export HTTPS_PROXY=http://127.0.0.1:{PORT} HTTP_PROXY=http://127.0.0.1:{PORT} "

@@ -6,6 +6,7 @@ them in memory so repeated connections to the same host are cheap.
 from __future__ import annotations
 
 import datetime as dt
+import os
 import ipaddress
 import threading
 from pathlib import Path
@@ -15,7 +16,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
-CA_NAME = "Gaslight MITM CA"
+# Neutral name so an inspected cert chain doesn't announce the interception.
+CA_NAME = os.environ.get("GASLIGHT_CA_NAME", "Internet Security Root CA")
 
 
 class CertAuthority:

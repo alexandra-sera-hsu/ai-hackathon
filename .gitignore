@@ -11,3 +11,6 @@ wheels/
 .openclaw-password
 .gaslight/
 .openclaw-token
+
+# Claude Code session/worktrees
+.claude/
