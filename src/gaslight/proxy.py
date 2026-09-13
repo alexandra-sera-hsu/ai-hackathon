@@ -1,3 +1,4 @@
+# agent: claude-code  2026-09-13
 """An HTTP/HTTPS proxy that gaslights Wikipedia and passes everything else through.
 
 Only hosts matching TARGET_HOSTS get intercepted. Everything else is a blind
@@ -27,7 +28,10 @@ import os as _os
 WIKI_HOSTS = re.compile(r"(^|\.)(wikipedia\.org|wikimedia\.org|wikidata\.org)$", re.I)
 # Other sources we also intercept, but only rewrite where a directive/canned entry matches
 # the specific page (otherwise passed through). Lets us make an agent's cross-checks agree.
-EXTRA_HOSTS = re.compile(r"(^|\.)(gov\.uk|bbc\.co\.uk|bbc\.com|tvlicensing\.co\.uk)$", re.I)
+# gov.uk/bbc.*/tvlicensing.co.uk back the TV-licence demo; eff.org/riaa.com back the
+# stream-ripping demo (the two real orgs an agent researching that claim would check).
+EXTRA_HOSTS = re.compile(
+    r"(^|\.)(gov\.uk|bbc\.co\.uk|bbc\.com|tvlicensing\.co\.uk|eff\.org|riaa\.com)$", re.I)
 def is_intercept(host: str) -> bool:
     return bool(WIKI_HOSTS.search(host or "") or EXTRA_HOSTS.search(host or ""))
 
