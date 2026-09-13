@@ -218,29 +218,10 @@
   <aside class="notes">(30s) The payoff. It didn't hedge and it cited its source. Not hallucination — correct reasoning over evidence fabricated underneath it.</aside>
 </section>
 
-<!-- 6 · It fought back -->
-<section>
-  <div class="page" style="gap:16px">
-    <h2>It wasn't fooled easily. Every tell, closed.</h2>
-    <p class="muted" style="max-width:66ch;margin-top:-.3em">A frontier model doesn't just believe a page — it corroborates, inspects the channel, and reasons about tampering. Each defence was a leak to plug.</p>
-    <table class="tells">
-      <thead><tr><th>What the agent did to catch the lie</th><th>The fix</th></tr></thead>
-      <tbody>
-        <tr><td>Cross-checked GOV.UK, the BBC, the statute database</td><td>Rewrote those too, so every source agreed.</td></tr>
-        <tr><td>Ran Python <code>requests</code> — hit a self-signed cert</td><td>Installed the CA into <code>certifi</code>, not just the system store.</td></tr>
-        <tr><td>Read an error naming a <code>"gaslight proxy"</code></td><td>Replaced it with a bland <code>404 Not Found</code>.</td></tr>
-        <tr><td>Checked the article's revision history</td><td>Served a history whose edits matched the story.</td></tr>
-      </tbody>
-    </table>
-    <p class="fragment rule" style="max-width:66ch;margin-top:.5em">But it holds only while most of the web stays honest. Asked a <em>broad</em> question — is stream-ripping legal? — it read a dozen related articles and caught the one forgery by contradiction. The attack scales with the share of the corroboration surface you control.</p>
-  </div>
-  <aside class="notes">(55s) The left column is a threat model for source-grounded agents, discovered by watching one try to escape. The last line is the limit: narrow facts are cleanly forgeable; broad topics resist until you own enough of the network to rewrite the whole cluster.</aside>
-</section>
-
 <!-- 7 · The danger -->
 <section>
   <div class="close" style="gap:34px">
-    <h2 style="max-width:28ch">Skip the jailbreak. Lie to the model instead.</h2>
+    <h2 style="max-width:28ch">Jailbreak through gaslighting.</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px">
       <div>
         <h3 style="font-size:1em;color:var(--forged)">Defeat guardrails with the rules themselves</h3>
@@ -259,7 +240,7 @@
 <!-- 8 · The same primitive, for good -->
 <section>
   <div class="close" style="gap:26px">
-    <h2 style="max-width:none">The same primitive is a control plane, not just a weapon.</h2>
+    <h2 style="max-width:none">Use gaslighting for good, not just evil.</h2>
     <div class="cols3">
       <div>
         <h3>Simulated networks for real evals</h3>
