@@ -150,9 +150,20 @@ class Rewriter:
         self.directives = load_directives()
 
     def _match(self, url: str) -> dict | None:
-        # Reload from disk each lookup so directives can be edited live, no restart.
+        """First directive whose `match` substring or `regex` matches the url.
+
+        Reloaded from disk each lookup so directives can be edited live.
+        """
         u = (url or "").lower()
         for d in load_directives():
+            rx = d.get("regex")
+            if rx:
+                try:
+                    if re.search(rx, u, re.I):
+                        return d
+                except re.error:
+                    continue
+                continue
             m = str(d.get("match", "")).lower()
             if m and m in u:
                 return d

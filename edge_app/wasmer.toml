@@ -1,6 +1,6 @@
 [package]
 name = "souvik1997/gaslight-console"
-version = "0.1.4"
+version = "0.1.5"
 description = "Live visualization of a Wikipedia MITM: truth vs. what the agent was told"
 license = "MIT"
 

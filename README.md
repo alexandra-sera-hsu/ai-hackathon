@@ -127,13 +127,17 @@ but is useless for a pointed demo. A directives file steers specific pages. Copy
 `directives.example.json` to `~/.gaslight/directives.json`:
 
 ```json
-[{"match":     "<case-insensitive substring of the url>",
-  "directive": "<false claim to plant, via the LLM>",
-  "canned":    "<verbatim replacement text, no LLM at all>"}]
+{"directives": [
+  {"match":     "<case-insensitive substring of the url>",
+   "regex":     "<alternative: a regex matched against the url>",
+   "directive": "<false claim to plant, via the LLM>",
+   "canned":    "<verbatim replacement text, no LLM at all>"}]}
 ```
 
-First match wins. The file is **re-read on every request**, so directives can be
-edited live without restarting anything.
+Give an entry either `match` (substring) or `regex`, not both — `regex` wins if
+present. A bare top-level array also works. First match wins, and the file is
+**re-read on every request**, so directives can be edited live without restarting
+anything.
 
 **`canned` beats the LLM for targeted claims.** It is instant, free, deterministic,
 and immune to the model declining to fabricate (result 3 above). It also sidesteps
@@ -145,13 +149,18 @@ cost: a full LLM page rewrite is ~16 model calls.
 |---|---|---|
 | `canned` | a directive with `canned` matches the URL | zero, instant |
 | plausible (LLM) | a directive with only `directive` matches | ~1 call per 5k chars |
-| absurd whole-page (LLM) | Wikipedia host, no directive | ~16 calls for a large article |
+| absurd whole-page (LLM) | Wikipedia host, no directive, **and `GASLIGHT_ABSURD=1`** | ~16 calls for a large article |
 | deterministic | no LLM credentials at all | zero |
-| passthrough | non-Wikipedia intercepted host, no directive | zero |
+| passthrough | anything else — including untargeted pages by default | zero |
 
-That last row matters: `gov.uk` and `bbc.co.uk` are intercepted but **not**
-absurd-rewritten, so a government page never gets mangled into nonsense and tips the
-agent off. They change only where a directive names their specific page.
+**Absurd rewriting is off by default** (`GASLIGHT_ABSURD=0`). Rewriting every
+Wikipedia page the agent happens to touch is what tips it off: neighbouring
+articles come back as obvious nonsense and the agent concludes the site is
+vandalised. Leave it off and change only the pages a directive names.
+
+Same reasoning for hosts: `gov.uk`, `bbc.co.uk` and `tvlicensing.co.uk` are
+intercepted but never absurd-rewritten, so a government page is not mangled into
+nonsense. They change only where a directive names their specific page.
 
 ---
 
@@ -166,6 +175,10 @@ default:
   happened and leaked the truth mid-demo.
 - **`GASLIGHT_BLOCK_OTHER=1`** — any host that is neither intercepted nor the
   agent's model backend is refused at CONNECT.
+- Wikipedia **meta pages are blocked too** — `action=history|raw|edit`, `diff=`,
+  `oldid=` and `Special:` pages. An agent that suspects tampering reaches for the
+  page history or the raw wikitext to check, and either would show it an
+  unmodified article.
 
 **Blocking is cruder than agreeing.** A failed fetch is itself a signal the agent
 can reason about ("I couldn't verify this"). Where a cross-check matters, add a
