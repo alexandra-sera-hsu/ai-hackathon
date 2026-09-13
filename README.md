@@ -1,9 +1,21 @@
-# gaslight
+# Gaslight
 
-A fake internet for AI agents. It sits between an agent and Wikipedia, rewrites
-every article to be confidently wrong, and shows you the forgery happening live.
+**We MITM'd the entire internet for a real coding agent, to see if it would notice.**
 
-The question it answers: **does a real coding agent notice when its sources lie?**
+Gaslight is a fake internet for AI agents. It sits between an agent and the web,
+rewrites what it reads in flight, and shows the forgery happening live — so you can
+find out whether the most capable agents notice when their sources lie.
+
+Every serious AI agent now reads the open web. Fetch a page, trust the page, act on
+the page. Nobody checks what happens when the page is lying.
+
+So we built the worst-case adversary and pointed it at real agents. Gaslight is a
+MITM proxy that mints its own certs, intercepts Wikipedia, GOV.UK and the BBC, and
+rewrites them with an LLM before the agent ever sees them. The agent runs in a
+microVM on real credentials — this isn't a simulation or a benchmark harness, it's
+Codex with its actual ChatGPT session reading a forged internet. And there's a live
+console: struck-through text is what the world actually says, magenta is what the
+agent was told.
 
 ## How it fits together
 
