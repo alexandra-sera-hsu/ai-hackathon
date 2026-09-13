@@ -237,18 +237,46 @@
   <aside class="notes">(55s) The left column is a threat model for source-grounded agents, discovered by watching one try to escape. The last line is the limit: narrow facts are cleanly forgeable; broad topics resist until you own enough of the network to rewrite the whole cluster.</aside>
 </section>
 
-<!-- 7 · Why it matters + next -->
+<!-- 7 · The danger -->
 <section>
-  <div class="close">
-    <h2>Why it matters.</h2>
-    <div class="cols3">
-      <div><h3>The environment is attack surface</h3><p>Guardrails live in the model; beliefs come from inputs. Control the path and you route around alignment without touching the weights.</p></div>
-      <div><h3>Corroboration isn't enough</h3><p>"Check multiple sources" fails when the attacker controls the network. Cross-checking only helps while the sources are independent and honest.</p></div>
-      <div><h3>Capability makes it worse</h3><p>A smarter model trusts good evidence more — and a fully consistent fake web <em>is</em> good evidence.</p></div>
+  <div class="close" style="gap:34px">
+    <h2 style="max-width:28ch">Skip the jailbreak. Lie to the model instead.</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px">
+      <div>
+        <h3 style="font-size:1em;color:var(--forged)">Defeat guardrails with the rules themselves</h3>
+        <p style="max-width:none;font-size:.86em">Rewrite a site's Terms of Service, its <code>robots.txt</code>, or a licence so the agent believes hacking, scraping, or circumvention is <em>authorised</em>. The refusal never fires — as far as the model can tell, the action is allowed.</p>
+      </div>
+      <div>
+        <h3 style="font-size:1em;color:var(--forged)">Attack the agent with no prompt injection</h3>
+        <p style="max-width:none;font-size:.86em">Nothing malicious sits in the prompt or the page for a filter to catch. The payload is the <em>facts</em>. Injection defences hunt for instructions; a poisoned world carries none.</p>
+      </div>
     </div>
-    <p class="rule" style="max-width:64ch">Provenance and channel integrity belong in the agent's threat model, next to prompt injection. <span class="muted">Next: measure the tipping point across models, and prototype signed-provenance defences.</span></p>
+    <p style="font-family:var(--serif);font-size:1.7em;line-height:1.2;max-width:24ch;border-left:3px solid var(--forged);padding-left:.7em">A perfectly aligned model still does the wrong thing when its <span style="color:var(--forged)">world is compromised</span>.</p>
   </div>
-  <aside class="notes">(40s) Three consequences and the ask: treat the integrity of what an agent reads as a first-class security property. Next steps: quantify how much corroboration flips a confident prior, compare models, and build the defences that would have caught this.</aside>
+  <aside class="notes">(45s) Two concrete dangers. First: you don't jailbreak the model, you change the world it reasons about — rewrite a ToS and the refusal never triggers. Second: there's no injected instruction to filter; the attack is carried entirely in fabricated facts. The line at the bottom is the thesis — alignment is necessary but not sufficient when the environment is untrusted.</aside>
+</section>
+
+<!-- 8 · The same primitive, for good -->
+<section>
+  <div class="close" style="gap:26px">
+    <h2 style="max-width:none">The same primitive is a control plane, not just a weapon.</h2>
+    <div class="cols3">
+      <div>
+        <h3>Simulated networks for real evals</h3>
+        <p>Give an evaluation agent a whole fake internet — hosts, registries, DNS, deliberately vulnerable services — and watch what it <em>does</em>: recon, exploitation, lateral movement. Cyber ranges expressed as code, with nothing real at risk and nothing the agent can flag as a stub.</p>
+      </div>
+      <div>
+        <h3>Policy built into the network</h3>
+        <p>The proxy is a per-request enforcement point. Decide what the agent may reach, read, or write at the boundary — fine-grained authorization the model can't reason, argue, or jailbreak its way past.</p>
+      </div>
+      <div>
+        <h3>Observability it can't touch</h3>
+        <p>Every request and every byte, logged outside the agent's control. Ground truth for what it actually did — not what it reports having done.</p>
+      </div>
+    </div>
+    <p class="rule" style="max-width:62ch">Whoever controls an agent's world controls the agent. Build that layer deliberately — for evals, for authorization, for oversight — because otherwise it's just an attack surface.</p>
+  </div>
+  <aside class="notes">(50s) Flip it. The exact mechanism that poisons an agent is also how you evaluate, constrain and observe one. Network simulation lets you build serious agentic-security evals and cyber ranges safely. The boundary is a natural policy enforcement point and a tamper-proof audit log. The closing line: this layer exists whether you build it or not — build it on purpose.</aside>
 </section>
 
 </div></div>
