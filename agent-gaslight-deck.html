@@ -118,7 +118,7 @@
 <section>
   <div class="title">
     <h1>Agent&nbsp;Gaslight</h1>
-    <div class="tag">We MITM'd the internet for a real coding agent, to see if it would notice.</div>
+    <div class="tag">We MITM'd the entire internet for a real coding agent, to see if it would notice.</div>
     <div class="by">A fake internet for AI agents &middot; hackathon build, September 2026</div>
   </div>
   <aside class="notes">(10s) Agents act on the world by reading it. This is what happens when you get to write what they read.</aside>
@@ -130,7 +130,7 @@
     <div>
       <h2>Sit on the path. Then sort every request.</h2>
       <ul>
-        <li>A real agent (OpenClaw, <code>gpt-5.6-sol</code>) runs in a Tenki VM and browses with its own tools.</li>
+        <li>A real agent &mdash; OpenClaw on its <strong>actual ChatGPT session</strong>, not a simulation or a benchmark harness &mdash; runs in a Tenki VM and browses with its own tools.</li>
         <li><code>HTTPS_PROXY</code> routes it through a MITM whose CA is in the VM's trust store — the padlock stays green.</li>
         <li><strong>Rewrite</strong> the target pages, <strong>tunnel</strong> the agent's own model traffic untouched, <strong>block</strong> anything else it might check against.</li>
       </ul>
