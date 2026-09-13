@@ -1,0 +1,10 @@
+kind: wasmer.io/App.v0
+name: gaslight-console
+package: .
+env:
+  PORT: "80"
+owner: souvik1997
+app_id: da_KN4IZtyUPVPE
+volumes:
+  - name: events
+    mount: /data

@@ -1,0 +1,21 @@
+[project]
+name = "gaslight"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Souvik Banerjee", email = "souvik1997@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=50.0.1",
+    "httpx>=0.28.1",
+    "tenki>=1.0.6",
+]
+
+[project.scripts]
+gaslight = "gaslight:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"

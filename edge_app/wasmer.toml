@@ -1,0 +1,19 @@
+[package]
+name = "souvik1997/gaslight-console"
+version = "0.1.4"
+description = "Live visualization of a Wikipedia MITM: truth vs. what the agent was told"
+license = "MIT"
+
+[dependencies]
+"wasmer/python" = "^3"
+
+[fs]
+"/app" = "./src"
+
+[[command]]
+name = "run"
+module = "wasmer/python:python"
+runner = "wasi"
+
+[command.annotations.wasi]
+main-args = ["/app/app.py"]
