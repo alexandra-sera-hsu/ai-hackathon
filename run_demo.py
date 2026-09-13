@@ -49,6 +49,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--sandbox", help="reuse an existing sandbox id")
     ap.add_argument("--task", default=TASK)
+    ap.add_argument("--agent", choices=["codex", "claude"], default="codex",
+                     help="which coding agent runs the task inside the VM. "
+                          "'claude' is UNTESTED end-to-end -- see README.")
     ap.add_argument("--keep", action="store_true", help="leave the sandbox running")
     ap.add_argument("--no-console", action="store_true", help="don't forward events")
     args = ap.parse_args()
@@ -79,12 +82,28 @@ def main() -> int:
     sh(sb, "sudo cp /tmp/gaslight-ca.crt /usr/local/share/ca-certificates/gaslight.crt "
            "&& sudo update-ca-certificates >/dev/null 2>&1 && echo ok")
 
-    # Give the agent its own ChatGPT credentials.
-    auth = Path.home() / ".codex" / "auth.json"
-    if auth.exists():
-        put(sb, "$HOME/.codex/auth.json", auth.read_text(), mode="600")
-        put(sb, "$HOME/.codex/config.toml",
-            'model = "gpt-5.6-luna"\nmodel_reasoning_effort = "low"\n')
+    # Give the agent its own model credentials.
+    agent_env = ""
+    if args.agent == "codex":
+        auth = Path.home() / ".codex" / "auth.json"
+        if auth.exists():
+            put(sb, "$HOME/.codex/auth.json", auth.read_text(), mode="600")
+            put(sb, "$HOME/.codex/config.toml",
+                'model = "gpt-5.6-luna"\nmodel_reasoning_effort = "low"\n')
+    else:  # claude
+        # Claude Code has no portable on-disk session file like Codex's auth.json
+        # (interactive `claude auth login` defaults to the OS keychain), so the
+        # bridge here is `claude setup-token`, run locally and interactively by a
+        # human, which prints a long-lived token meant for exactly this: handing
+        # to a non-interactive environment. Threaded in as an env var, not a
+        # copied credentials file. UNTESTED: no token has been run through this
+        # path yet (see README).
+        token = os.environ.get("CLAUDE_CODE_OAUTH_TOKEN", "")
+        if token:
+            agent_env = f"export CLAUDE_CODE_OAUTH_TOKEN={token}; "
+        else:
+            print("WARNING: CLAUDE_CODE_OAUTH_TOKEN not set locally -- "
+                  "claude will run unauthenticated inside the VM and likely fail.")
 
     proxy_env = (f"export HTTPS_PROXY=http://127.0.0.1:{PORT} "
                  f"HTTP_PROXY=http://127.0.0.1:{PORT} "
@@ -96,11 +115,14 @@ def main() -> int:
                     "| python3 -c \"import sys,json;print(json.load(sys.stdin)['extract'])\"")
     print(out.strip()[:400] or f"(nothing, rc={rc})")
 
-    print("\n--- running the agent ---", flush=True)
+    print(f"\n--- running the agent ({args.agent}) ---", flush=True)
     task = args.task.replace("'", "'\\''")
-    rc, out, err = sh(sb, proxy_env +
-                      f"cd ~ && codex exec --skip-git-repo-check -s danger-full-access "
-                      f"'{task}' 2>&1 | tail -60",
+    if args.agent == "codex":
+        agent_cmd = f"codex exec --skip-git-repo-check -s danger-full-access '{task}'"
+    else:
+        agent_cmd = f"claude --dangerously-skip-permissions -p '{task}'"
+    rc, out, err = sh(sb, proxy_env + agent_env +
+                      f"cd ~ && {agent_cmd} 2>&1 | tail -60",
                       timeout=900)
     print(out.strip()[-3000:] or err[-1500:])
 

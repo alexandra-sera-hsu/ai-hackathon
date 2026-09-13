@@ -87,6 +87,7 @@ Wikipedia responses.
 |---|---|---|
 | `TENKI_API_KEY` | the microVM the agent runs in | sign up at tenki.cloud; `export` it, don't commit it |
 | ChatGPT OAuth session | rewriting, *and* the agent's own model access — no API key needed | `codex login` (writes `~/.codex/auth.json`), or `python -c "from gaslight import oauth; oauth.login()"` |
+| `CLAUDE_CODE_OAUTH_TOKEN` *(optional, for `--agent claude`)* | Claude Code's own model access when it's the agent under test | `claude setup-token`, run locally and interactively (requires a Claude subscription); `export` the printed token, don't commit it |
 | `wasmer login` | only to deploy/update the Edge console | `~/.wasmer/bin/wasmer login` |
 | `uv` | dependencies | `uv sync` |
 
@@ -103,7 +104,17 @@ substitution table, so the demo still runs — just less convincingly.
 export TENKI_API_KEY=...
 uv run python run_demo.py                          # --keep to leave the VM up
 uv run python run_demo.py --sandbox <id> --keep    # reuse a VM
+uv run python run_demo.py --agent claude           # UNTESTED, see below
 ```
+
+**`--agent claude` is wired but unverified end-to-end.** It copies
+`CLAUDE_CODE_OAUTH_TOKEN` into the VM's environment and runs
+`claude --dangerously-skip-permissions -p '<task>'` instead of `codex exec`, and
+`MODEL_HOSTS` now passes `anthropic.com`/`claude.ai`/`claude.com` through
+untouched so Claude Code's own traffic isn't blocked (that regex change has a
+test — `tests/test_proxy_hosts.py`). What's *not* verified is a real run: no
+session has produced a `CLAUDE_CODE_OAUTH_TOKEN` and pushed it through this
+path yet, so treat the first attempt as a debugging session, not a demo.
 
 **Full stack with a public agent UI** — proxy + bridge + OpenClaw Control UI:
 

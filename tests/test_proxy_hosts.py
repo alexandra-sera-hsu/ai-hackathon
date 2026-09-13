@@ -4,6 +4,11 @@
 These are the invariants AGENTS.md calls out as "do not break these" — most
 importantly that MODEL_HOSTS can never be fooled by a lookalike host, or the
 agent's own model traffic could be blocked (or worse, MITM'd).
+
+MODEL_HOSTS now also covers Claude Code's own traffic (anthropic.com/claude.ai/
+claude.com), added alongside `--agent claude` support in run_demo.py. That
+regex change is covered here; the live sandbox run through it is not (no
+CLAUDE_CODE_OAUTH_TOKEN has exercised it end-to-end yet).
 """
 from __future__ import annotations
 
@@ -79,6 +84,10 @@ MODEL_YES = [
     "openai.com",
     "files.oaiusercontent.com",
     "azure.com",
+    "api.anthropic.com",
+    "claude.ai",
+    "claude.com",
+    "platform.claude.com",
 ]
 
 MODEL_NO = [
@@ -86,6 +95,9 @@ MODEL_NO = [
     "evilchatgpt.com",                # real host glued onto an evil prefix
     "notopenai.com",
     "openai.com.evil.example",
+    "anthropic.com.attacker.example",
+    "notclaude.ai",
+    "claude.ai.evil.example",
 ]
 
 

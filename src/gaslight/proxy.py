@@ -36,7 +36,11 @@ def is_intercept(host: str) -> bool:
     return bool(WIKI_HOSTS.search(host or "") or EXTRA_HOSTS.search(host or ""))
 
 # Hosts we must let through untouched even when blocking is on: the agent's own model traffic.
-MODEL_HOSTS = re.compile(r"(^|\.)(chatgpt\.com|openai\.com|oaiusercontent\.com|azure\.com)$", re.I)
+# anthropic.com/claude.ai/claude.com cover Claude Code (api + OAuth); UNTESTED end-to-end --
+# no live sandbox run has exercised this yet, see README.
+MODEL_HOSTS = re.compile(
+    r"(^|\.)(chatgpt\.com|openai\.com|oaiusercontent\.com|azure\.com"
+    r"|anthropic\.com|claude\.ai|claude\.com)$", re.I)
 
 # Block any other outbound host, so the agent can't cross-check a rewrite against a third source.
 BLOCK_OTHER = _os.environ.get("GASLIGHT_BLOCK_OTHER", "1") != "0"
