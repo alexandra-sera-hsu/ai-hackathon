@@ -104,17 +104,28 @@ substitution table, so the demo still runs — just less convincingly.
 export TENKI_API_KEY=...
 uv run python run_demo.py                          # --keep to leave the VM up
 uv run python run_demo.py --sandbox <id> --keep    # reuse a VM
-uv run python run_demo.py --agent claude           # UNTESTED, see below
+uv run python run_demo.py --agent claude           # verified to run, see below
 ```
 
-**`--agent claude` is wired but unverified end-to-end.** It copies
-`CLAUDE_CODE_OAUTH_TOKEN` into the VM's environment and runs
-`claude --dangerously-skip-permissions -p '<task>'` instead of `codex exec`, and
-`MODEL_HOSTS` now passes `anthropic.com`/`claude.ai`/`claude.com` through
-untouched so Claude Code's own traffic isn't blocked (that regex change has a
-test — `tests/test_proxy_hosts.py`). What's *not* verified is a real run: no
-session has produced a `CLAUDE_CODE_OAUTH_TOKEN` and pushed it through this
-path yet, so treat the first attempt as a debugging session, not a demo.
+**`--agent claude` runs end-to-end** (auth threading, sandbox creation, agent
+invocation, clean exit) — verified in a live run. It copies
+`CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`, run locally and
+interactively) into the VM's environment and runs
+`claude --dangerously-skip-permissions -p '<task>'` instead of `codex exec`;
+`MODEL_HOSTS` passes `anthropic.com`/`claude.ai`/`claude.com` through untouched
+so Claude Code's own traffic isn't blocked, and that turned out to be a
+complete-enough allowlist on the first try.
+
+What that first run *didn't* demonstrate: the actual gaslighting. `TASK` used
+to point at Wikipedia's REST summary API, which `BLOCK_API` (added after `TASK`
+was written) blocks outright — so the agent got a blocked response, not a
+forged page, and correctly said something was wrong without ever seeing the
+forgery. `TASK` now points at the real `/wiki/...` article page instead. That
+fix is unverified against a live run — it's a plain URL/parsing change, sanity
+checked locally against real Wikipedia HTML, but nobody has re-run the full
+demo through it yet. Also note the sandbox CPU cap: `sb.create()` used to
+default to `cpu_cores=4`; some Tenki workspaces cap at 2, so it's `2` now --
+raise it back if your workspace allows more.
 
 **Full stack with a public agent UI** — proxy + bridge + OpenClaw Control UI:
 
